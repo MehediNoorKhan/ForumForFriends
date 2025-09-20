@@ -1,9 +1,10 @@
 import React from 'react';
+import TagSection from './TagSection';
 
 const Home = () => {
     return (
-        <div>
-            home
+        <div className='max-w-7xl mx-auto'>
+            <TagSection></TagSection>
         </div>
     );
 };
