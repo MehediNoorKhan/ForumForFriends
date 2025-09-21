@@ -2,11 +2,11 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import useAuth from "../Hooks/useAuth";
-import useAxiosSecure from "../Hooks/useAxiosSecure";
+import useAxios from "../Hooks/useAxios";
 
 const SocialLogin = () => {
     const { googleLogin, setUser } = useAuth();
-    const axiosSecure = useAxiosSecure();
+    const axiosSecure = useAxios();
     const navigate = useNavigate();
 
     const handleGoogleLogin = async () => {

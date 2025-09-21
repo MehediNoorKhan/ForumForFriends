@@ -7,6 +7,9 @@ import JoinUs from "../Authentication/JoinUs";
 import Register from "../Authentication/Register";
 import AddPost from "../User/AddPost";
 import AddAnnouncement from "../Admin/AddAnnouncement";
+import PrivateRoute from "./PrivateRoute";
+import Forbidden from "../Components/Forbidden";
+import AdminRoute from "./AdminRoute";
 
 export const router = createBrowserRouter([
     {
@@ -20,12 +23,17 @@ export const router = createBrowserRouter([
                 },
                 {
                     path: 'addpost',
-                    Component: AddPost
+                    element: <PrivateRoute><AddPost></AddPost></PrivateRoute>
                 },
                 {
                     path: 'addannouncements',
-                    Component: AddAnnouncement
-                }
+                    element: <AdminRoute><AddAnnouncement></AddAnnouncement></AdminRoute>
+                },
+                {
+                    path: 'forbidden',
+                    element: <Forbidden></Forbidden>
+                },
+
 
             ]
     },

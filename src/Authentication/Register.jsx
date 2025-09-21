@@ -3,13 +3,13 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import useAuth from "../Hooks/useAuth";
 import Swal from "sweetalert2";
-import useAxiosSecure from "../Hooks/useAxiosSecure";
+import useAxios from "../Hooks/useAxios";
 
 const Register = () => {
     const [uploading, setUploading] = useState(false);
     const [registering, setRegistering] = useState(false);
     const { createUser, updateUserProfile } = useAuth();
-    const axiosSecure = useAxiosSecure();
+    const axiosSecure = useAxios();
 
     const {
         register,
