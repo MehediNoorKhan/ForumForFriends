@@ -6,6 +6,7 @@ import AuthLayout from "../Layouts/AuthLayout";
 import JoinUs from "../Authentication/JoinUs";
 import Register from "../Authentication/Register";
 import AddPost from "../User/AddPost";
+import AddAnnouncement from "../Admin/AddAnnouncement";
 
 export const router = createBrowserRouter([
     {
@@ -20,6 +21,10 @@ export const router = createBrowserRouter([
                 {
                     path: 'addpost',
                     Component: AddPost
+                },
+                {
+                    path: 'addannouncements',
+                    Component: AddAnnouncement
                 }
 
             ]

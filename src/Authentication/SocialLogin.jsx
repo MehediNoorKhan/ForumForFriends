@@ -20,6 +20,7 @@ const SocialLogin = () => {
                 name: user.displayName,
                 email: user.email,
                 avatar: user.photoURL,
+                role: "user",
                 userStatus: "bronze",
                 membership: "no",
                 posts: 0

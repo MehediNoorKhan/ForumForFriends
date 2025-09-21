@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import imageCompression from "browser-image-compression";
 import { useForm, Controller } from "react-hook-form";
 import Select from "react-select";
 import { useNavigate } from "react-router";
@@ -10,24 +11,32 @@ import useAuth from "../Hooks/useAuth";
 const AddPost = () => {
     const axiosSecure = useAxiosSecure();
     const navigate = useNavigate();
-    const { register, handleSubmit, control, reset, setValue } = useForm();
-    const { user } = useAuth(); // logged-in user
+    const { register, handleSubmit, control, reset, setValue, watch } = useForm();
+    const { user, loading } = useAuth(); // get logged-in user
 
     const [tags, setTags] = useState([]);
     const [loadingTags, setLoadingTags] = useState(true);
-    const [loadingUser, setLoadingUser] = useState(true);
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [uploading, setUploading] = useState(false);
+    const [imageUploaded, setImageUploaded] = useState(false);
 
     const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY;
+    const authorImage = watch("authorImage");
+
+    // Redirect if not logged in
+    useEffect(() => {
+        if (!loading && !user) {
+            navigate("/joinus");
+        }
+    }, [user, loading, navigate]);
 
     // Fetch tags
     useEffect(() => {
         const fetchTags = async () => {
             try {
                 const res = await axiosSecure.get("/tags");
-                const formattedTags = res.data.map((tag) => ({
+                const formattedTags = res.data.map(tag => ({
                     value: tag.name,
                     label: tag.name,
                 }));
@@ -42,45 +51,54 @@ const AddPost = () => {
         fetchTags();
     }, [axiosSecure]);
 
-    // Fetch logged-in user
+    // Fetch logged-in user data
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchUserData = async () => {
             if (!user?.email) return;
             try {
                 const res = await axiosSecure.get(`/users/email/${user.email}`);
                 setUserData(res.data);
             } catch (err) {
                 console.error(err);
-                setError("Failed to load user's data");
-            } finally {
-                setLoadingUser(false);
+                setError("Failed to load user data");
             }
         };
-        fetchUser();
+        fetchUserData();
     }, [axiosSecure, user]);
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
         setUploading(true);
-        const formData = new FormData();
-        formData.append("image", file);
+        setImageUploaded(false);
 
         try {
+            // Compress image
+            const options = {
+                maxSizeMB: 1,
+                maxWidthOrHeight: 1024,
+                useWebWorker: true,
+            };
+            const compressedFile = await imageCompression(file, options);
+
+            const formData = new FormData();
+            formData.append("image", compressedFile);
+
             const res = await fetch(
                 `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
                 { method: "POST", body: formData }
             );
             const data = await res.json();
-            if (data.success) {
-                setValue("authorImage", data.data.url);
 
+            if (data.success) {
+                setValue("authorImage", data.data.url, { shouldValidate: true });
+                setImageUploaded(true); // ✅ mark image as uploaded
             } else {
                 throw new Error("Failed to upload image");
             }
         } catch (err) {
             console.error(err);
-
         } finally {
             setUploading(false);
         }
@@ -108,8 +126,9 @@ const AddPost = () => {
                 confirmButtonColor: "#6b21a8",
             });
 
+            // Reset form and image upload state
             reset();
-            setUserData(prev => ({ ...prev, posts: prev.posts + 1 }));
+            setImageUploaded(false); // ✅ important
         } catch (err) {
             console.error(err);
             Swal.fire({
@@ -121,10 +140,10 @@ const AddPost = () => {
         }
     };
 
-    if (loadingTags || loadingUser) return <LoadingSpinner />;
+    if (loading || !user) return <LoadingSpinner />; // show spinner while checking login
+    if (loadingTags || !userData) return <LoadingSpinner />;
     if (error) return <p className="text-red-500 text-center mt-6">{error}</p>;
 
-    // Check if user can add more posts
     const canAddPost = !(userData.userStatus === "bronze" && userData.posts >= 5);
 
     if (!canAddPost) {
@@ -171,8 +190,8 @@ const AddPost = () => {
                     <label className="block mb-1 text-black">Author Name</label>
                     <input
                         type="text"
-                        {...register("authorName")}
-                        placeholder="Enter author name"
+                        value={userData.name}
+                        disabled
                         className="w-full px-4 py-2 border rounded bg-white border-white focus:outline-none focus:ring-2 focus:ring-white"
                     />
                 </div>
@@ -182,8 +201,8 @@ const AddPost = () => {
                     <label className="block mb-1 text-black">Author Email</label>
                     <input
                         type="email"
-                        {...register("authorEmail")}
-                        placeholder="Enter author email"
+                        value={userData.email}
+                        disabled
                         className="w-full px-4 py-2 border rounded bg-white border-white focus:outline-none focus:ring-2 focus:ring-white"
                     />
                 </div>
@@ -197,15 +216,17 @@ const AddPost = () => {
                         onChange={handleImageUpload}
                         className="w-full px-4 py-2 border rounded bg-white border-white focus:outline-none focus:ring-2 focus:ring-white"
                     />
-
                 </div>
+
+                {/* Hidden field for uploaded image */}
+                <input type="hidden" {...register("authorImage", { required: true })} />
 
                 {/* Post Title */}
                 <div>
                     <label className="block mb-1 text-black">Post Title</label>
                     <input
                         type="text"
-                        {...register("postTitle")}
+                        {...register("postTitle", { required: true })}
                         placeholder="Enter post title"
                         className="w-full px-4 py-2 border rounded bg-white border-white focus:outline-none focus:ring-2 focus:ring-white"
                     />
@@ -215,7 +236,7 @@ const AddPost = () => {
                 <div>
                     <label className="block mb-1 text-black">Post Description</label>
                     <textarea
-                        {...register("postDescription")}
+                        {...register("postDescription", { required: true })}
                         placeholder="Enter post description"
                         rows={4}
                         className="w-full px-4 py-2 border rounded bg-white border-white focus:outline-none focus:ring-2 focus:ring-white"
@@ -237,7 +258,8 @@ const AddPost = () => {
 
                 <button
                     type="submit"
-                    className="px-6 py-2 bg-purple-500 text-white rounded transition"
+                    disabled={uploading || !imageUploaded}
+                    className={`px-6 py-2 bg-purple-500 text-white rounded transition ${uploading || !imageUploaded ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                 >
                     Add Post
                 </button>

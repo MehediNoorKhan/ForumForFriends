@@ -88,6 +88,7 @@ const Register = () => {
                     name: data.name,
                     email: data.email,
                     avatar: imageUrl,
+                    role: "user",
                     userStatus: "bronze",
                     membership: "no",
                     posts: 0
