@@ -20,8 +20,9 @@ const SocialLogin = () => {
                 name: user.displayName,
                 email: user.email,
                 avatar: user.photoURL,
-                userStatus: "user", // new field
-                membership: "no"    // new field
+                userStatus: "bronze",
+                membership: "no",
+                posts: 0
             };
 
             // Send to backend (insert only if not exists)

@@ -41,18 +41,18 @@ const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const monitor = onAuthStateChanged(auth, (user) => {
-            if (user) {
-                console.log(user);
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            if (currentUser) {
+                setUser(currentUser);
             } else {
-                console.log('On Auth State a problem');
+                setUser(null);
             }
+            setLoading(false); // stop spinner
         });
 
-        return () => {
-            monitor();
-        };
-    }, [user]);
+        return () => unsubscribe();
+    }, []);
+
 
     return (
         <AuthContext.Provider value={authInfo}>

@@ -5,6 +5,7 @@ import Home from "../Home/Home";
 import AuthLayout from "../Layouts/AuthLayout";
 import JoinUs from "../Authentication/JoinUs";
 import Register from "../Authentication/Register";
+import AddPost from "../User/AddPost";
 
 export const router = createBrowserRouter([
     {
@@ -15,7 +16,12 @@ export const router = createBrowserRouter([
                 {
                     index: true,
                     Component: Home
+                },
+                {
+                    path: 'addpost',
+                    Component: AddPost
                 }
+
             ]
     },
     {
@@ -32,6 +38,7 @@ export const router = createBrowserRouter([
                     Component: Register
                 }
             ]
-    }
+    },
+
 
 ]);

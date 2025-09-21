@@ -89,7 +89,8 @@ const Register = () => {
                     email: data.email,
                     avatar: imageUrl,
                     userStatus: "bronze",
-                    membership: "no"
+                    membership: "no",
+                    posts: 0
                 };
                 await saveUserToDB(userData);
                 reset();
