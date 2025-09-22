@@ -8,59 +8,46 @@ const useAxiosSecure = () => {
 
     const axiosSecure = axios.create({
         baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
-        headers: {
-            "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
     });
 
-    // 🔹 Request interceptor: attach Firebase token
+    // Request interceptor
     axiosSecure.interceptors.request.use(
         async (config) => {
             if (user) {
-                const token = await user.getIdToken(); // Firebase token
-                config.headers.Authorization = `Bearer ${token}`;
+                try {
+                    // Use cached token; do NOT force refresh
+                    const token = await user.getIdToken();
+                    config.headers.Authorization = `Bearer ${token}`;
+                } catch (err) {
+                    console.error("Failed to get token:", err);
+                }
             }
             return config;
         },
-        (error) => {
-            return Promise.reject(error);
-        }
+        (error) => Promise.reject(error)
     );
 
-    // 🔹 Response interceptor: handle errors globally
+    // Response interceptor
     axiosSecure.interceptors.response.use(
         (response) => response,
         async (error) => {
-            if (error.response) {
-                const status = error.response.status;
-                if (status === 401 || status === 403) {
-                    // Token expired or unauthorized
-                    await Swal.fire({
-                        icon: "error",
-                        title: "Unauthorized",
-                        text: "Your session has expired. Please log in again.",
-                        confirmButtonColor: "#6b21a8",
-                    });
-                    logout(); // Log out the user
-                } else {
-                    // Other server errors
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: error.response.data?.message || "Something went wrong",
-                        confirmButtonColor: "#6b21a8",
-                    });
-                }
-            } else {
-                // Network or unknown errors
+            if (error.response?.status === 401 || error.response?.status === 403) {
                 Swal.fire({
                     icon: "error",
-                    title: "Network Error",
-                    text: error.message || "Something went wrong",
+                    title: "Unauthorized",
+                    text: "Your session has expired. Please log in again.",
+                    confirmButtonColor: "#6b21a8",
+                });
+                logout();
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: error.response?.data?.message || error.message,
                     confirmButtonColor: "#6b21a8",
                 });
             }
-
             return Promise.reject(error);
         }
     );
