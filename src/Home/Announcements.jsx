@@ -29,7 +29,7 @@ export default function Announcements() {
     if (loading) return <LoadingSpinner />;
 
     return (
-        <div className="max-w-7xl mt-6 bg-gray-50 p-6 rounded-xl shadow-md">
+        <div className="max-w- mt-6 bg-gray-50 p-6 rounded-xl shadow-md">
             {/* Section Title */}
             <h2 className="font-bold text-xl mb-4">Announcements</h2>
 

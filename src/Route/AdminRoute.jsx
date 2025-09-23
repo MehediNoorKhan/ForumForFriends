@@ -1,20 +1,17 @@
-import React from 'react';
-import useAuth from '../Hooks/useAuth';
-import LoadingSpinner from '../Components/LoadingSpinner';
-import { Navigate } from 'react-router';
-import useUserRole from '../Hooks/useUserRole';
+import React from "react";
+import { Navigate } from "react-router";
+import useAuth from "../Hooks/useAuth";
+import useUserRole from "../Hooks/useUserRole";
+import LoadingSpinner from "../Components/LoadingSpinner";
 
 const AdminRoute = ({ children }) => {
     const { user, loading: authLoading } = useAuth();
     const { role, loading: roleLoading, error } = useUserRole();
 
-    // Show loading spinner if auth or role fetching is in progress
-    if (authLoading || roleLoading) {
-        return <LoadingSpinner />;
-    }
+    if (authLoading || roleLoading) return <LoadingSpinner />;
 
-    // If user not logged in, role is not 'admin', or error fetching role
-    if (!user || error || role !== 'admin') {
+    // If not logged in, or role fetching error, or not admin
+    if (!user || error || role !== "admin") {
         return <Navigate to="/forbidden" replace />;
     }
 

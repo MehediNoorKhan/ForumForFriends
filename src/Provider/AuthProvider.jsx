@@ -1,58 +1,64 @@
-import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import {
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile
+} from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { auth } from '../Firebase/firebase.config.init';
 import { AuthContext } from './AuthContext';
 
 const AuthProvider = ({ children }) => {
-
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-
+    // ✅ Create user
     const createUser = (email, password) => {
-        setUser(null);
+        setLoading(true);
         return createUserWithEmailAndPassword(auth, email, password);
     };
 
-    const updateUserProfile = (user, profile) => {
-        return updateProfile(user, profile);
+    // ✅ Update user profile
+    const updateUserProfile = (profile) => {
+        if (auth.currentUser) {
+            return updateProfile(auth.currentUser, profile);
+        }
+        return Promise.reject("No user logged in");
     };
 
+    // ✅ Login
     const login = (email, password) => {
         setLoading(true);
         return signInWithEmailAndPassword(auth, email, password);
     };
 
+    // ✅ Logout
     const logout = () => {
-        setUser(null);
-        setLoading(false);
+        setLoading(true);
         return signOut(auth);
-    };
-
-    const authInfo = {
-        user,
-        setUser,
-        setLoading,
-        loading,
-        createUser,
-        updateUserProfile,
-        login,
-        logout
     };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            if (currentUser) {
-                setUser(currentUser);
-            } else {
-                setUser(null);
-            }
-            setLoading(false); // stop spinner
+            setUser(currentUser || null);
+            setLoading(false);
+            console.log("👤 Auth state changed, user:", currentUser);
         });
 
         return () => unsubscribe();
     }, []);
 
+    const authInfo = {
+        user,
+        setUser,
+        loading,
+        setLoading,
+        createUser,
+        updateUserProfile,
+        login,
+        logout,
+    };
 
     return (
         <AuthContext.Provider value={authInfo}>
