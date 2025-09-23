@@ -10,6 +10,7 @@ import AddAnnouncement from "../Admin/AddAnnouncement";
 import PrivateRoute from "./PrivateRoute";
 import Forbidden from "../Components/Forbidden";
 import AdminRoute from "./AdminRoute";
+import PostDetails from "../User/PostDetails";
 
 export const router = createBrowserRouter([
     {
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
                 {
                     path: 'forbidden',
                     element: <Forbidden></Forbidden>
+                },
+                {
+                    path: "/post/:id",
+                    element: <PostDetails></PostDetails>,
                 },
 
 

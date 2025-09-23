@@ -1,25 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, NavLink } from "react-router";
 import { Bell } from "lucide-react";
 import Logo from "../Components/Logo";
 import useAuth from "../Hooks/useAuth";
+import useAxiosSecure from "../Hooks/useAxiosSecure";
 
 const Navbar = () => {
     const { user, logout } = useAuth();
+    const axiosSecure = useAxiosSecure();
+
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [unseenCount, setUnseenCount] = useState(0);
 
     const handleLogout = async () => {
         try {
-            await logout().then(() => {
-
-            }).catch((error) => {
-                console.log(error.message);
-            });;
+            await logout();
             setDropdownOpen(false);
         } catch (err) {
             console.error("Logout failed:", err);
         }
     };
+
+    // ✅ Fetch unseen announcements count
+    useEffect(() => {
+        if (!user) return;
+
+        const fetchUnseenCount = async () => {
+            try {
+                const { data } = await axiosSecure.get("/announcements/unseen/count");
+                setUnseenCount(data.count || 0);
+            } catch (err) {
+                console.error("Error fetching unseen count:", err);
+                setUnseenCount(0);
+            }
+        };
+
+        fetchUnseenCount();
+    }, [user, axiosSecure]);
 
     return (
         <div className="navbar bg-base-100 shadow-md px-6">
@@ -48,8 +65,14 @@ const Navbar = () => {
                     Membership
                 </NavLink>
 
-                <button className="btn btn-ghost btn-circle" aria-label="notifications">
+                {/* ✅ Notification Bell with unseen count */}
+                <button className="btn btn-ghost btn-circle relative" aria-label="notifications">
                     <Bell className="w-5 h-5" />
+                    {unseenCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                            {unseenCount}
+                        </span>
+                    )}
                 </button>
             </div>
 
